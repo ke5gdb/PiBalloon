@@ -1,0 +1,7 @@
+you really should use git
+
+basically I just rewrote the threading interface to use a more standard approach of having a "bag of threads"
+it should be reasonably clear what is going on, but if it isn't, gchat me
+
+
+Yes, yes, I know. Git. One of these days. Let me get the code a little more polished, and then we'll talk. A working balloon is top priority.

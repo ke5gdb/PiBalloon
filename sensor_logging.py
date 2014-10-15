@@ -1,5 +1,12 @@
 #!/usr/bin/python
 
+#
+# Sensor polling script for PiBalloon. 
+#
+
+# I'm not a CS guy
+
+
 import os
 import glob
 import time
