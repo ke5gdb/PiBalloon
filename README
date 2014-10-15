@@ -1,0 +1,19 @@
+This repository is a dumping ground for scripts and programs that will be flying on a Raspberry Pi weather balloon payload.
+
+More detailed writeups can be found at http://www.thathamkid.com/blog/
+
+Hardware:
+> Raspberry Pi
+> Dorji DRA818V (x2; one for APRS, other SSTV)
+> GPS
+> BMP085 or BMP180 pressure sensor
+> DHT11 humidity sensor
+> 1-wire Temp Sensor network
+> TI TMP513
+
+Software:
+> python afsk lib
+> ramdisk (~32M) at /mnt/ramdisk/
+> Adafruit DHT and BMP Python libraries
+
+
