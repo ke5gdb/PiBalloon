@@ -5,7 +5,7 @@ More detailed writeups can be found at http://www.thathamkid.com/blog/
 Hardware:
 > Raspberry Pi
 > Dorji DRA818V (x2; one for APRS, other SSTV)
-> GPS
+> GPS (LEA-6M for this project; any gpsd compatible unit will work)
 > BMP085 or BMP180 pressure sensor
 > DHT11 humidity sensor
 > 1-wire Temp Sensor network
