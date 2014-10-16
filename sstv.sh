@@ -34,7 +34,7 @@ while ! [ -f /mnt/ramdisk/kill_sstv ] ; do
 
 
 	# Take picture
-	fswebcam -S 60 $IMG
+	fswebcam -S 60 --title "K5UTD High Alt. Balloon" $IMG
 
 	# Compile image into SSTV
 	sstv -r 22050 -p $PROTOCOL $IMG
