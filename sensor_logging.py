@@ -16,6 +16,7 @@ import Adafruit_DHT
 import threading 
 import Queue
 import logging
+from gps import *
 
 # Setup the 1-wire thermal sensor
 w1_base_dir = '/sys/bus/w1/devices/'
@@ -24,6 +25,9 @@ w1_device_file = w1_device_folder + '/w1_slave'
 
 # Setup the BMP pressure sensor
 sensor = BMP085.BMP085()
+
+# Global variable name
+gpsd = None
 
 # This will read the temp by reading a file, and cutting the extra crap
 def read_temp():
@@ -35,7 +39,8 @@ def read_temp():
 	if equals_pos != -1:
 		temp_string = lines[1][equals_pos+2:]
 		temp_c = float(temp_string) / 1000.0
-		return temp_c
+		if temp_c != 85.0:
+			return temp_c
 
 # This actually read the file for the read_temp function
 def read_temp_raw():
@@ -77,6 +82,27 @@ def humidity_loop():
 		#print output
 		write_file(output, 'humidity.log')
 
+def read_gps():
+	global gpsd
+	gpsd = gps(mode=WATCH_ENABLE)
+	while True:
+		gpsd.next()
+
+def gps_loop():
+	#gpsp = GPSPoller()
+	#gpsp.start()
+
+	while True:
+		if str(gpsd.fix.altitude) != 'nan':
+			output = (str(round(Decimal(time.time()),2)) + ',' + str(gpsd.fix.latitude) + ',' + str(gpsd.fix.longitude) + 
+				 ',' + str(gpsd.fix.altitude) + ',' + str(gpsd.fix.track) + ',' + str(gpsd.fix.speed) + ',' + str(gpsd.fix.climb))
+			write_file(output, 'gps.log')
+			print output
+		else:
+			print "Invalid data"
+
+		time.sleep(.8)
+
 q = Queue.Queue()
 
 class MasterThread:
@@ -88,6 +114,8 @@ class MasterThread:
 		self.threads.append(threading.Thread(target=temp_loop))
 		self.threads.append(threading.Thread(target=pressure_loop))
 		self.threads.append(threading.Thread(target=humidity_loop))
+		self.threads.append(threading.Thread(target=read_gps))
+		self.threads.append(threading.Thread(target=gps_loop))
 
 	def run(self):
 		self.logger.info("Enabling all threads")
