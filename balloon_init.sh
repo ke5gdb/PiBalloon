@@ -34,6 +34,9 @@ else
 	echo "GPIO23 already exists!"
 fi
 
+sudo -u pi echo 0 > /home/pi/balloon/.count
+chmod 777 /home/pi/balloon/.count
+
 sleep 5
 
 # Okay, this command is shitty, but I'd prefer to do a screen -r as pi

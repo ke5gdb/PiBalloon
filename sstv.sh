@@ -19,18 +19,8 @@ CYCLE=180	# Cycle time (seconds)
 WAV=/mnt/ramdisk/image.png.wav
 IMG=/mnt/ramdisk/image.png
 
-COUNT=4
+COUNT=1
 
-function aprs_tx() {
-	# THIS IS TEMPORARY! JUST FOR DEMONSTRATION PURPOSES!
-	echo Assembling packet
-	aprs -c KE5GDB-4 -o /home/pi/balloon/aprs.wav "`cat /mnt/ramdisk/aprs.packet`"
-	echo Transmitting packet
-	echo 0 > /sys/class/gpio/gpio$GPIO/value
-	sleep $TXDELAY
-	mplayer /home/pi/balloon/aprs.wav -af pan=$PAN
-	echo 1 > /sys/class/gpio/gpio$GPIO/value
-}
 
 while ! [ -f /mnt/ramdisk/kill_sstv ] ; do
 	# Establish start time
@@ -45,21 +35,27 @@ while ! [ -f /mnt/ramdisk/kill_sstv ] ; do
 
 
 	# Take picture
-	fswebcam --top-banner --title "K5UTD High Alt. Balloon" --subtitle 'Now in technicolor!' -S 120 $IMG
+	echo -n "Taking picture.. "
+	fswebcam --top-banner --title "K5UTD High Alt. Balloon" --subtitle 'Now in technicolor!' -S 120 $IMG > /dev/null 2>&1
+	echo "done!"
 
 	# Compile image into SSTV
-	sstv -r 22050 -p $PROTOCOL $IMG
+	echo -n "Compiling SSTV wav file... "
+	sstv -r 22050 -p $PROTOCOL $IMG > /dev/null 2>&1
+	echo "done!"
 
 	# Transmit
+	echo -n "Transmitting... "
 	echo 0 > /sys/class/gpio/gpio$GPIO/value
 	sleep $TXDELAY
-	mplayer $WAV -af pan=$PAN
+	mplayer $WAV -af pan=$PAN > /dev/null 2>&1
 	echo 1 > /sys/class/gpio/gpio$GPIO/value
+	echo "done!"
 
 	# Run the APRS script
-	/home/pi/balloon/freq.py 144.3900 144.3900 0015 /dev/ttyUSB0
+	/home/pi/balloon/freq.py 144.3400 144.3400 0015 /dev/ttyUSB0 > /dev/null 2>&1
 	/home/pi/balloon/aprs.sh
-	/home/pi/balloon/freq.py 144.5000 144.5000 0015 /dev/ttyUSB0
+	/home/pi/balloon/freq.py 144.5000 144.5000 0015 /dev/ttyUSB0 > /dev/null 2>&1
 
 	# Counter
 	COUNT=$(($COUNT + 1))

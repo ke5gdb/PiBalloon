@@ -11,10 +11,15 @@ GPIO=/sys/class/gpio/gpio22/value
 PAN=2:0:1
 
 # Compile an APRS position packet (packet assembled in sensor_logging.py)
+echo -n "Compiling position packet... "
 aprs -c KE5GDB-4 -o /home/pi/balloon/aprs.wav "`cat /mnt/ramdisk/aprs.packet`"
+echo "done!"
+
+echo -n "Transmitting position packet... "
 echo 0 > $GPIO
-mplayer /home/pi/balloon/aprs.wav -af pan=$PAN
+mplayer /home/pi/balloon/aprs.wav -af pan=$PAN > /dev/null 2>&1
 echo 1 > $GPIO
+echo "done!"
 
 ###########
 # OKAY
@@ -32,6 +37,26 @@ if [[ $COUNT -gt 999 ]] ; then
 fi
 echo $(($COUNT + 1)) > /home/pi/balloon/.count
 
+# On the first iteration, send the telemetry parameters
+if [ $COUNT -eq 0 ] ; then
+	echo -n "Compiling/sending telemetry units, parameters, etc... "
+	aprs -c KE5GDB -o aprs.wav ":KE5GDB-4 :PARM.ExtTemp,IntTemp,Humidity,Current,Voltage"
+	echo 0 > $GPIO
+	mplayer /home/pi/balloon/aprs.wav -af pan=$PAN > /dev/null 2>&1
+	echo 1 > $GPIO
+
+	aprs -c KE5GDB -o aprs.wav ":KE5GDB-4 :UNIT.degC,degC,%,A,Volts"
+	echo 0 > $GPIO
+	mplayer /home/pi/balloon/aprs.wav -af pan=$PAN > /dev/null 2>&1
+	echo 1 > $GPIO
+
+	aprs -c KE5GDB -o aprs.wav ":KE5GDB-4 :EQNS.0,.1,-60,0,.1,-60,0,.1,0,0,.0025,0,0,.01,5"
+	echo 0 > $GPIO
+	mplayer /home/pi/balloon/aprs.wav -af pan=$PAN > /dev/null 2>&1
+	echo 1 > $GPIO
+
+	echo "done!"
+fi
 # Zero-fill the counter (APRS spec)
 COUNT=`printf "%03d\n" $COUNT`
 
@@ -46,7 +71,7 @@ TLM_CPU_TEMP=`echo "$(cat /sys/class/thermal/thermal_zone0/temp) * .001" | bc`
 TLM_SATS=`tail -1 /mnt/ramdisk/gps.log | cut -d',' -f8`
 
 # Assemble the status packet
-STATUS="Volt: $TLM_VOLTAGE, Current: $TLM_CURRENT, Pressure: $TLM_PRESSURE Pa,"
+STATUS=">Batt Volts: $TLM_VOLTAGE, Current: $TLM_CURRENT, Pressure: $TLM_PRESSURE Pa,"
 STATUS="$STATUS  Ascent: $TLM_ASCENT m/s, CPU Temp: $TLM_CPU_TEMP, Sats: $TLM_SATS"
 
 # Scale the telemetry values to 0-999 (almost 10-bit res...)
@@ -61,16 +86,26 @@ TLM_VOLTAGE=`printf "%.0f" $(echo "($TLM_VOLTAGE - 5) * 100" | bc)` # A=0 B=.01 
 TELEM=T#$COUNT,$TLM_TEMP_EXT,$TLM_TEMP_INT,$TLM_HUMIDITY,$TLM_CURRENT,$TLM_VOLTAGE,00000000
 
 # Compile an APRS telemetry packet
+echo -n "Compiling telemetry packet... "
 aprs -c KE5GDB-4 -o /home/pi/balloon/aprs.wav "$TELEM"
+echo "done!"
+
+echo -n "Transmitting telemetry packet... "
 echo 0 > $GPIO
-mplayer /home/pi/balloon/aprs.wav -af pan=$PAN
+mplayer /home/pi/balloon/aprs.wav -af pan=$PAN > /dev/null 2>&1
 echo 1 > $GPIO
+echo "done!"
 
 # Compile an APRS status packet
+echo -n "Compiling status packet... "
 aprs -c KE5GDB-4 -o /home/pi/balloon/aprs.wav "$STATUS"
+echo "done!"
+
+echo -n "Transmitting status packet... "
 echo 0 > $GPIO
-mplayer /home/pi/balloon/aprs.wav -af pan=$PAN
+mplayer /home/pi/balloon/aprs.wav -af pan=$PAN > /dev/null 2>&1
 echo 1 > $GPIO
+echo "done!"
 
 # Sync the logs; saved for last due to scrapers
 sudo chmod 777 -R /mnt/ramdisk/
@@ -81,5 +116,6 @@ for FILE in $FILES; do
 	echo -n > /mnt/ramdisk/$FILE
 done
 
-#echo $TELEM
-#echo $STATUS
+echo $TELEM
+echo $STATUS
+echo Count: $COUNT
