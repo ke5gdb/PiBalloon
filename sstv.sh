@@ -21,6 +21,17 @@ IMG=/mnt/ramdisk/image.png
 
 COUNT=4
 
+function aprs_tx() {
+	# THIS IS TEMPORARY! JUST FOR DEMONSTRATION PURPOSES!
+	echo Assembling packet
+	aprs -c KE5GDB-4 -o /home/pi/balloon/aprs.wav "`cat /mnt/ramdisk/aprs.packet`"
+	echo Transmitting packet
+	echo 0 > /sys/class/gpio/gpio$GPIO/value
+	sleep $TXDELAY
+	mplayer /home/pi/balloon/aprs.wav -af pan=$PAN
+	echo 1 > /sys/class/gpio/gpio$GPIO/value
+}
+
 while ! [ -f /mnt/ramdisk/kill_sstv ] ; do
 	# Establish start time
 	TIME=`date +%s`
@@ -34,7 +45,7 @@ while ! [ -f /mnt/ramdisk/kill_sstv ] ; do
 
 
 	# Take picture
-	fswebcam --top-banner --title "K5UTD High Alt. Balloon" --subtitle 'Now in color!' -S 120 $IMG
+	fswebcam --top-banner --title "K5UTD High Alt. Balloon" --subtitle 'Now in technicolor!' -S 120 $IMG
 
 	# Compile image into SSTV
 	sstv -r 22050 -p $PROTOCOL $IMG
@@ -44,6 +55,11 @@ while ! [ -f /mnt/ramdisk/kill_sstv ] ; do
 	sleep $TXDELAY
 	mplayer $WAV -af pan=$PAN
 	echo 1 > /sys/class/gpio/gpio$GPIO/value
+
+	# Run the APRS script
+	/home/pi/balloon/freq.py 144.3900 144.3900 0015 /dev/ttyUSB0
+	/home/pi/balloon/aprs.sh
+	/home/pi/balloon/freq.py 144.5000 144.5000 0015 /dev/ttyUSB0
 
 	# Counter
 	COUNT=$(($COUNT + 1))
