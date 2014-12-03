@@ -11,9 +11,16 @@ fi
 
 killall gpsd
 
-sleep 1
+SERIAL=`$BALLOON/freq.py 144.5000 144.5000 0015 /dev/ttyUSB0 | grep "+DMOSETGROUP:0"`
+if [ "$SERIAL" != "" ] ; then 
+	echo /dev/ttyUSB0 > $BALLOON/.radio
+	gpsd /dev/ttyUSB1
+else
+	echo /dev/ttyUSB1 > $BALLOON/.radio
+	gpsd /dev/ttyUSB0
+fi
 
-gpsd /dev/ttyUSB1
+chmod 777 $BALLOON/.radio
 
 modprobe w1-gpio pullup=1
 modprobe w1-therm strong_pullup=1
@@ -42,3 +49,4 @@ sleep 5
 # Okay, this command is shitty, but I'd prefer to do a screen -r as pi
 
 sudo -u pi screen -dmS sensor sudo $BALLOON/sensor_logging.py
+sudo -u pi screen -dmS sensor sudo $BALLOON/tmp513_logging.py

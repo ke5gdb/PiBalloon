@@ -14,11 +14,11 @@
 GPIO=22		# GPIO Pin
 PAN=2:0:1	# Left/Right Audio R -> 2:0:1 L -> 2:1:0
 TXDELAY=.5	# Time (in seconds)
-CYCLE=180	# Cycle time (seconds)
-#PROTOCOL=r36	# Martin 1 (m1), Robot 36 (r36), Scottie DX (sdx)
+CYCLE=120	# Cycle time (seconds)
+PROTOCOL=r36	# Martin 1 (m1), Robot 36 (r36), Scottie DX (sdx)
 WAV=/mnt/ramdisk/image.png.wav
 IMG=/mnt/ramdisk/image.png
-
+SERIAL=`cat /home/pi/balloon/.radio`
 COUNT=1
 
 
@@ -27,11 +27,11 @@ while ! [ -f /mnt/ramdisk/kill_sstv ] ; do
 	TIME=`date +%s`
 
 	# Send Martin 1 every 5 images
-	if [ $(($COUNT % 5)) -eq 0 ] ; then
-		PROTOCOL=sdx
-	else
-		PROTOCOL=r36
-	fi
+#	if [ $(($COUNT % 5)) -eq 0 ] ; then
+#		PROTOCOL=sdx
+#	else
+#		PROTOCOL=r36
+#	fi
 
 
 	# Take picture
@@ -53,9 +53,9 @@ while ! [ -f /mnt/ramdisk/kill_sstv ] ; do
 	echo "done!"
 
 	# Run the APRS script
-	/home/pi/balloon/freq.py 144.3400 144.3400 0015 /dev/ttyUSB0 > /dev/null 2>&1
+	/home/pi/balloon/freq.py 144.3900 144.3900 0015 $SERIAL > /dev/null 2>&1
 	/home/pi/balloon/aprs.sh
-	/home/pi/balloon/freq.py 144.5000 144.5000 0015 /dev/ttyUSB0 > /dev/null 2>&1
+	/home/pi/balloon/freq.py 144.5000 144.5000 0015 $SERIAL > /dev/null 2>&1
 
 	# Counter
 	COUNT=$(($COUNT + 1))

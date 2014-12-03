@@ -10,7 +10,7 @@
 
 table = '/'    # Primary Symbol Table (/)
 symbol = 'O'   # Jeep (j); Balloon (O)
-comment = 'PiBalloon ke5gdb@gmail.com'
+comment = 'PiBalloonII ke5gdb@gmail.com'
 
 # Global variables
 gpsd = None
@@ -81,24 +81,30 @@ def temp_loop():
 			output = str(round(Decimal(time.time()),2)) + ',' + str(temp)
 			#print output
 			write_file(output, 'temp.log')
+			print "t",
 
 # Pressure loop
 def pressure_loop():
 	while True:
-		pressure = sensor.read_sealevel_pressure()
-		output = str(round(Decimal(time.time()),2)) + ',' + str(pressure)
-		#print output
-		write_file(output, 'pressure.log')
-		time.sleep(0.25)
+		try:
+			pressure = sensor.read_sealevel_pressure()
+			output = str(round(Decimal(time.time()),2)) + ',' + str(pressure)
+			#print output
+			write_file(output, 'pressure.log')
+			time.sleep(0.25)
+			print "p",
+		except:
+			print "Crap!"
 
 # Humidity loop
 def humidity_loop():
 	while True:
 		humidity = read_humidity()
-		if humidity != None:
+		if humidity != None and humidity != 0:
 			output = str(round(Decimal(time.time()),2)) + ',' + str(humidity)
 			#print output
 			write_file(output, 'humidity.log')
+			print "h",
 
 def read_gps():
 	global gpsd
@@ -130,11 +136,17 @@ def decdeg2aprs(dd,val):
 def gps_loop():
 	#gpsp = GPSPoller()
 	#gpsp.start()
-
+	time_set = False
 	time.sleep(3)
 	
 	while True:
 		if str(gpsd.fix.altitude) != 'nan':
+			# Set system clock
+			if not time_set:
+				os.system(str('sudo date +%FT%T.000Z -s ' + gpsd.utc))
+				time_set = True
+				print "Time set",
+
 			# GPS File logging
 			output = (str(round(Decimal(time.time()),2)) + ',' + str(gpsd.fix.latitude) + ',' + str(gpsd.fix.longitude) + 
 				 ',' + str(gpsd.fix.altitude) + ',' + str(gpsd.fix.track) + ',' + str(gpsd.fix.speed) + ',' + str(gpsd.fix.climb) + ',' +
@@ -157,8 +169,9 @@ def gps_loop():
 			# The packet itself
 			packet =  '!' + lat + table + '0' + lon.zfill(5) + symbol  + str(course).zfill(3) + '/' + str(int(speed)).zfill(3) + '/A=' + str(alt).zfill(6) + '>' + comment
 			overwrite_file(packet, "aprs.packet")
+			print "g",
 		else:
-			print "Invalid data"
+			print "GPS not locked!",
 
 		time.sleep(.8)
 
@@ -216,6 +229,7 @@ class MasterThread:
 	        #we need this thread to keep ticking
 		while(True):
 			if not any([thread.isAlive() for thread in self.threads]):
+				print  "Thread dead!"
 				break
 			else:
 				time.sleep(1)

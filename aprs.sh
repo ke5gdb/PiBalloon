@@ -12,7 +12,7 @@ PAN=2:0:1
 
 # Compile an APRS position packet (packet assembled in sensor_logging.py)
 echo -n "Compiling position packet... "
-aprs -c KE5GDB-4 -o /home/pi/balloon/aprs.wav "`cat /mnt/ramdisk/aprs.packet`"
+aprs -c KE5GDB-4 -d K5UTD -o /home/pi/balloon/aprs.wav "`cat /mnt/ramdisk/aprs.packet`"
 echo "done!"
 
 echo -n "Transmitting position packet... "
@@ -45,7 +45,7 @@ if [ $COUNT -eq 0 ] ; then
 	mplayer /home/pi/balloon/aprs.wav -af pan=$PAN > /dev/null 2>&1
 	echo 1 > $GPIO
 
-	aprs -c KE5GDB -o aprs.wav ":KE5GDB-4 :UNIT.degC,degC,%,A,Volts"
+	aprs -c KE5GDB -o aprs.wav ":KE5GDB-4 :UNIT.degC,degC,%,mA,Volts"
 	echo 0 > $GPIO
 	mplayer /home/pi/balloon/aprs.wav -af pan=$PAN > /dev/null 2>&1
 	echo 1 > $GPIO
@@ -62,17 +62,18 @@ COUNT=`printf "%03d\n" $COUNT`
 
 # Scrape these parameters from the sensor logs
 TLM_TEMP_EXT=`tail -1 /mnt/ramdisk/temp.log | cut -d',' -f2`
-TLM_TEMP_INT=25.123 #`tail -1 /mnt/ramdisk/temp.log | cut -d',' -f3`
-TLM_HUMIDITY=`tail -1 /mnt/ramdisk/humidity.log | cut -d',' -f2`
-TLM_CURRENT=2.1234 #`tail -1 /mnt/ramdisk/power.log | cut -d',' -f3`
-TLM_VOLTAGE=13.8212 #`tail -1 /mnt/ramdisk/power.log | cut -d',' -f2`
+TLM_TEMP_INT=`tail -1 /mnt/ramdisk/tmp513.log | cut -d',' -f4`
+TLM_HUMIDITY=`tail -1 /var/log/balloon/humidity.log | cut -d',' -f2`
+TLM_CURRENT=`tail -1 /mnt/ramdisk/tmp513.log | cut -d',' -f7`
+TLM_TXCURRENT=`tail -1 /mnt/ramdisk/tmp513.log | cut -d',' -f8`
+TLM_VOLTAGE=`tail -1 /mnt/ramdisk/tmp513.log | cut -d',' -f2`
 TLM_PRESSURE=`tail -1 /mnt/ramdisk/pressure.log | cut -d',' -f2`
 TLM_CPU_TEMP=`echo "$(cat /sys/class/thermal/thermal_zone0/temp) * .001" | bc`
 TLM_SATS=`tail -1 /mnt/ramdisk/gps.log | cut -d',' -f8`
 
 # Assemble the status packet
-STATUS=">Batt Volts: $TLM_VOLTAGE, Current: $TLM_CURRENT, Pressure: $TLM_PRESSURE Pa,"
-STATUS="$STATUS  Ascent: $TLM_ASCENT m/s, CPU Temp: $TLM_CPU_TEMP, Sats: $TLM_SATS"
+STATUS=">Batt Volts: $TLM_VOLTAGE, Idle Current: $TLM_CURRENT mA, Pressure: $TLM_PRESSURE Pa,"
+STATUS="$STATUS  TX Current: $TLM_TXCURRENT mA, CPU Temp: $TLM_CPU_TEMP C, Sats: $TLM_SATS"
 
 # Scale the telemetry values to 0-999 (almost 10-bit res...)
 TLM_TEMP_EXT=`printf "%.0f" $(echo "($TLM_TEMP_EXT + 60) / .1" | bc)` # A=0 B=.1 C=-60
@@ -87,7 +88,7 @@ TELEM=T#$COUNT,$TLM_TEMP_EXT,$TLM_TEMP_INT,$TLM_HUMIDITY,$TLM_CURRENT,$TLM_VOLTA
 
 # Compile an APRS telemetry packet
 echo -n "Compiling telemetry packet... "
-aprs -c KE5GDB-4 -o /home/pi/balloon/aprs.wav "$TELEM"
+aprs -c KE5GDB-4 -d K5UTD -o /home/pi/balloon/aprs.wav "$TELEM"
 echo "done!"
 
 echo -n "Transmitting telemetry packet... "
@@ -98,7 +99,7 @@ echo "done!"
 
 # Compile an APRS status packet
 echo -n "Compiling status packet... "
-aprs -c KE5GDB-4 -o /home/pi/balloon/aprs.wav "$STATUS"
+aprs -c KE5GDB-4 -d K5UTD -o /home/pi/balloon/aprs.wav "$STATUS"
 echo "done!"
 
 echo -n "Transmitting status packet... "
