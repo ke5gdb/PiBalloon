@@ -15,7 +15,7 @@ ADDR = 0x5D
 
 # current calibration register, see datasheet for calc
 # I = (V_shunt * CalReg) / 4096
-ICAL = 4096  # R_shunt = 0.01 ohms, I in 0.1 mA
+ICAL = 3350  # R_shunt = 0.01 ohms, I in 0.1 mA
 PR_mW = 2.0 # PR multiplier per LSB to get mW result
 CR_mA = 0.1 # CR multiplier per LSB to get mA result
 

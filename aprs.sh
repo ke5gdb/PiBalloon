@@ -50,7 +50,7 @@ if [ $COUNT -eq 0 ] ; then
 	mplayer /home/pi/balloon/aprs.wav -af pan=$PAN > /dev/null 2>&1
 	echo 1 > $GPIO
 
-	aprs -c KE5GDB -o aprs.wav ":KE5GDB-4 :EQNS.0,.1,-60,0,.1,-60,0,.1,0,0,.0025,0,0,.01,5"
+	aprs -c KE5GDB -o aprs.wav ":KE5GDB-4 :EQNS.0,.1,-60,0,.1,-60,0,.1,0,0,2,0,0,.01,5"
 	echo 0 > $GPIO
 	mplayer /home/pi/balloon/aprs.wav -af pan=$PAN > /dev/null 2>&1
 	echo 1 > $GPIO
@@ -79,8 +79,12 @@ STATUS="$STATUS  TX Current: $TLM_TXCURRENT mA, CPU Temp: $TLM_CPU_TEMP C, Sats:
 TLM_TEMP_EXT=`printf "%.0f" $(echo "($TLM_TEMP_EXT + 60) / .1" | bc)` # A=0 B=.1 C=-60
 TLM_TEMP_INT=`printf "%.0f" $(echo "($TLM_TEMP_INT + 60) * 10" | bc)` # A=0 B=.1 C=-60
 TLM_HUMIDITY=`printf "%.0f" $(echo "($TLM_HUMIDITY * 10)" | bc)` # A=0 B=.1 C=0
-TLM_CURRENT=`printf "%.0f" $(echo "($TLM_CURRENT * 400)" | bc)` # A=0 B=.0025 C=0
+TLM_CURRENT=`printf "%.0f" $(echo "($TLM_CURRENT * .5)" | bc)` # A=0 B=2 C=0
 TLM_VOLTAGE=`printf "%.0f" $(echo "($TLM_VOLTAGE - 5) * 100" | bc)` # A=0 B=.01 C=5
+
+if [ "$TLM_HUMIDITY" = "0" ] ; then
+	TLM_HUMIDITY=
+fi
 
 # Assemble the telemetry packet
 # T#123,234,345,456,567,678,01010101 Counter, then5  values

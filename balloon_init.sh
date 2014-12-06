@@ -49,4 +49,8 @@ sleep 5
 # Okay, this command is shitty, but I'd prefer to do a screen -r as pi
 
 sudo -u pi screen -dmS sensor sudo $BALLOON/sensor_logging.py
-sudo -u pi screen -dmS sensor sudo $BALLOON/tmp513_logging.py
+sudo -u pi screen -dmS tmp513 sudo $BALLOON/tmp513_logging.py
+
+sleep 10
+
+#sudo -u pi screen -dmS sstv $BALLOON/sstv.sh

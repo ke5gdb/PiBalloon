@@ -18,13 +18,14 @@ CYCLE=120	# Cycle time (seconds)
 PROTOCOL=r36	# Martin 1 (m1), Robot 36 (r36), Scottie DX (sdx)
 WAV=/mnt/ramdisk/image.png.wav
 IMG=/mnt/ramdisk/image.png
-SERIAL=`cat /home/pi/balloon/.radio`
 COUNT=1
-
 
 while ! [ -f /mnt/ramdisk/kill_sstv ] ; do
 	# Establish start time
 	TIME=`date +%s`
+
+	# Establish the serial port
+	SERIAL=`cat /home/pi/balloon/.radio`
 
 	# Send Martin 1 every 5 images
 #	if [ $(($COUNT % 5)) -eq 0 ] ; then
