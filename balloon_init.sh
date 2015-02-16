@@ -53,4 +53,4 @@ sudo -u pi screen -dmS tmp513 sudo $BALLOON/tmp513_logging.py
 
 sleep 10
 
-#sudo -u pi screen -dmS sstv $BALLOON/sstv.sh
+sudo -u pi screen -dmS sstv $BALLOON/sstv-threaded.sh

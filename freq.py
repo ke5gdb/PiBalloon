@@ -16,9 +16,9 @@ arg = sys.argv
 ser = serial.Serial(arg[4], 9600, timeout=1)
 
 ser.write('AT+DMOCONNECT\r\n')
-print ser.readline()
+print ser.readline().rstrip()
 
 ser.write('AT+DMOSETGROUP=1,' + arg[1] + ',' + arg[2] + ',' + arg[3] + ',2,' + arg[3] + '\r\n')
-print ser.readline()
+print ser.readline().rstrip()
 
 ser.close()

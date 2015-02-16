@@ -10,7 +10,7 @@
 
 table = '/'    # Primary Symbol Table (/)
 symbol = 'O'   # Jeep (j); Balloon (O)
-comment = 'PiBalloonII ke5gdb@gmail.com'
+comment = 'PiBalloonII - 144.5MHz SSTV - ke5gdb@gmail.com'
 
 # Global variables
 gpsd = None
